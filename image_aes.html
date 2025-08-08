@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CryptX - AES Image Encryption</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      color: white;
+      text-align: center;
+      padding: 30px;
+    }
+
+    input[type="file"],
+    input[type="text"] {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      width: 300px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      margin: 10px 5px;
+      background-color: #00cec9;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #00b894;
+    }
+
+    img {
+      max-height: 200px;
+      border-radius: 8px;
+      border: 2px solid white;
+      transition: all 1s ease-in-out;
+      opacity: 1;
+    }
+
+    .img-transition {
+      opacity: 0;
+      filter: blur(5px);
+      transform: scale(0.95);
+    }
+
+    .img-active {
+      opacity: 1;
+      filter: blur(0);
+      transform: scale(1);
+    }
+
+    .row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+      margin-top: 20px;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      max-width: 700px;
+      margin-inline: auto;
+      display: none;
+      text-align: left;
+    }
+
+    textarea {
+      width: 90%;
+      height: 80px;
+      margin-top: 10px;
+      font-size: 13px;
+      border-radius: 6px;
+      padding: 8px;
+    }
+
+    /* Loader spinner */
+    .loader {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #00cec9;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-top: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Custom alert modal */
+    .custom-alert {
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #222;
+      color: #fff;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.4);
+      z-index: 9999;
+      font-size: 16px;
+      display: none;
+    }
+    /* --- AES Theory Box Styling --- */
+.theory-box {
+  background: linear-gradient(to bottom right, #34568B, #1e3c72);
+  padding: 25px;
+  border-radius: 15px;
+  margin-top: 30px;
+  max-width: 700px;
+  margin-inline: auto;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+  text-align: left;
+  color: #fff;
+}
+
+.theory-box h3 {
+  display: flex;
+  align-items: center;
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+.theory-box h3::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(to right, #00cec9, #0984e3);
+  border-radius: 3px;
+  margin-right: 10px;
+}
+
+.theory-box ul {
+  padding-left: 20px;
+  line-height: 1.6;
+}
+#animation-container {
+  text-align: center;
+  margin-top: 30px;
+}
+
+#crypto-image {
+  width: 300px;
+  height: auto;
+  transition: opacity 1s ease-in-out;
+  opacity: 1;
+}
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 15px; /* space between buttons */
+  margin-top: 20px;
+}
+
+.button-row button {
+  background-color: #00e0c6;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+#animImage {
+  display: none;
+  margin: 20px auto 0 auto; /* centers below buttons */
+  max-width: 80%;
+  max-height: 400px;
+  transition: opacity 0.8s;
+}
+
+
+  </style>
+</head>
+<body>
+
+  <h2>🔐 AES Image Encryption (Key-Based)</h2>
+
+  <input type="file" id="imageInput" accept="image/*">
+  <br>
+
+  <div>
+    <button onclick="encryptImage()">Encrypt</button>
+  </div>
+
+  <div>
+    <input type="text" id="generatedKey" readonly placeholder="Secret key appears here">
+    <h4 style="margin: 0;">🔐 AES Encrypted Base64</h4>
+    <textarea id="encryptedData" readonly placeholder="Encrypted base64 will appear here..."></textarea>
+  </div>
+
+  <div style="margin-top: 10px;">
+    <h4>🔑 Enter Key to Decrypt</h4>
+    <input type="text" id="decryptKey" placeholder="Enter 6-digit key">
+    <button onclick="decryptImage()">Decrypt</button>
+  </div>
+
+  <div class="row">
+    <div>
+      <h4>Original</h4>
+      <img id="preview" style="display:none;">
+    </div>
+    <div>
+      <h4>Decrypted</h4>
+      <img id="decrypted" style="display:none;">
+    </div>
+  </div>
+
+  <div style="margin-top: 40px;">
+    <!-- Animation Section -->
+<div id="animation-container">
+<div class="button-row">
+  <button onclick="startAnimation()">Show Animation</button>
+  <button onclick="showTheory()">Show Theory</button>
+</div>
+
+<img id="animImage" alt="Animation step" />
+
+
+<!-- Theory Box (hidden by default) -->
+<div id="theoryBox" class="theory-box" style="display:none;">
+  <h3>AES Encryption Theory</h3>
+  <p>
+    AES (Advanced Encryption Standard) is a symmetric encryption algorithm that works by applying multiple rounds of transformations to plaintext data. In this system, we:
+  </p>
+  <ul>
+    <li>Convert the uploaded image into a Base64 string</li>
+    <li>Encrypt the Base64 string using a 6-digit key with AES</li>
+    <li>Store or display the encrypted output as a text string</li>
+    <li>Decrypt using the same key to restore the original image</li>
+  </ul>
+</div>
+
+
+
+  <script>
+    let base64Image = "";
+
+    const preview = document.getElementById("preview");
+    const decryptedImg = document.getElementById("decrypted");
+
+    document.getElementById('imageInput').addEventListener('change', function (e) {
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        base64Image = event.target.result;
+        preview.src = base64Image;
+        preview.style.display = "block";
+      };
+      reader.readAsDataURL(this.files[0]);
+    });
+
+    function generateNumericKey() {
+      return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    function showCustomAlert(msg) {
+      const box = document.getElementById("alertBox");
+      box.innerText = msg;
+      box.style.display = "block";
+      setTimeout(() => { box.style.display = "none"; }, 3000);
+    }
+
+    function encryptImage() {
+      if (!base64Image) return showCustomAlert("⚠️ Please upload an image first!");
+
+      const key = generateNumericKey();
+      document.getElementById("generatedKey").value = key;
+
+      const encrypted = CryptoJS.AES.encrypt(base64Image, key).toString();
+      document.getElementById("encryptedData").value = encrypted;
+
+      showCustomAlert("✅ Image encrypted. Secret key generated!");
+    }
+
+    function decryptImage() {
+      const key = document.getElementById("decryptKey").value.trim();
+      const encrypted = document.getElementById("encryptedData").value.trim();
+
+      if (!key || !encrypted) return showCustomAlert("⚠️ Enter key and ensure data is encrypted.");
+
+      decryptedImg.classList.add("img-transition");
+
+      setTimeout(() => {
+        try {
+          const bytes = CryptoJS.AES.decrypt(encrypted, key);
+          const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+
+          if (!decryptedData.startsWith("data:image")) throw new Error("Invalid key.");
+
+          decryptedImg.src = decryptedData;
+          decryptedImg.style.display = "block";
+          decryptedImg.classList.remove("img-transition");
+
+          showCustomAlert("✅ Decryption successful!");
+        } catch (e) {
+          showCustomAlert("❌ Decryption failed. Incorrect key?");
+        }
+      }, 800);
+    }
+
+    function startAnimation() {
+  if (!base64Image) return showCustomAlert("⚠️ Please upload and encrypt an image first!");
+
+  const key = document.getElementById("generatedKey").value;
+  const encrypted = document.getElementById("encryptedData").value.trim();
+  if (!key || !encrypted) return showCustomAlert("⚠️ Please encrypt the image first!");
+
+  const animImg = document.getElementById("animImage");
+  animImg.style.display = "block";
+
+  // Step 1: Show Original
+  animImg.src = base64Image;
+  animImg.style.opacity = 1;
+
+  // Step 2: Show Encrypted Visual (Base64 scrambled text as image)
+  setTimeout(() => {
+    animImg.style.opacity = 0;
+    setTimeout(() => {
+      // Create an "encrypted look" image from ciphertext
+      const canvas = document.createElement("canvas");
+      canvas.width = 300;
+      canvas.height = 200;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#0f0";
+      ctx.font = "12px monospace";
+      const lines = encrypted.match(/.{1,50}/g); // break ciphertext into lines
+      lines.slice(0, 10).forEach((line, i) => {
+        ctx.fillText(line, 10, 20 + i * 15);
+      });
+      animImg.src = canvas.toDataURL();
+      animImg.style.opacity = 1;
+    }, 800);
+  }, 1000);
+
+  // Step 3: Show Decrypted
+  setTimeout(() => {
+    animImg.style.opacity = 0;
+    setTimeout(() => {
+      try {
+        const bytes = CryptoJS.AES.decrypt(encrypted, key);
+        const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+        animImg.src = decryptedData;
+        animImg.style.opacity = 1;
+      } catch {
+        showCustomAlert("❌ Decryption failed during animation");
+      }
+    }, 800);
+  }, 3000);
+}
+
+
+function showTheory() {
+  document.getElementById("theoryBox").style.display = "block";
+}
+
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CryptX - Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      background: url('https://t4.ftcdn.net/jpg/01/78/26/33/360_F_178263302_k1BXHnatPVB8ucmYmZKY53Sd89ziqpMQ.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px;
+    }
+
+    header h1 {
+      font-size: 54px;
+      color: #00ccff;
+      margin: 0;
+      letter-spacing: 2px;
+    }
+
+    .main {
+      display: flex;
+      flex: 1;
+      justify-content: space-around;
+      align-items: stretch;
+      padding: 40px;
+      flex-wrap: wrap;
+    }
+
+    .panel {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 15px;
+      padding: 30px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      margin: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .panel h2 {
+      font-size: 24px;
+      color: #41a4bd;
+      margin-bottom: 15px;
+    }
+
+    .panel p {
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .panel button {
+      margin-top: 20px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      background: #135361;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .panel button:hover {
+      background: #0099cc;
+    }
+
+    footer {
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
+      background-color: rgba(0, 0, 0, 0.6);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🔐 CryptX Dashboard</h1>
+  </header>
+
+  <div class="main">
+    <!-- Panel 1: Text/Image Encryption -->
+    <div class="panel">
+      <h2>Explore Algorithms</h2>
+      <p>Start learning classic and modern encryption techniques. Hands-on animations and theory included.</p>
+      <button onclick="window.location.href='encrypt.html'">🔤 Text Encryption</button>
+      <button onclick="window.location.href='image_algorithms.html'">🖼️ Image Encryption</button>
+    </div>
+
+    <!-- Panel 2: Smart Recommender -->
+    <div class="panel">
+      <h2>Smart Assistant</h2>
+      <p>Not sure which algorithm to use? Let the assistant recommend the best encryption technique for your data.</p>
+      <button onclick="window.location.href='recommender.html'">🤖 Smart Recommender</button>
+    </div>
+
+   <div class="panel">
+  <h2>📩 CryptoShare</h2>
+  <p>Upload and decrypt encrypted images or videos shared with you. Just enter the correct key to visualize the full process securely.</p>
+  <button onclick="window.location.href='share/public/cryptoshare.html'">🔓 Open CryptoShare</button>
+</div>
+
+
+  <footer>
+    © 2025 CryptX | Made with ❤️ for learning encryption
+  </footer>
+
+</body>
+</html>

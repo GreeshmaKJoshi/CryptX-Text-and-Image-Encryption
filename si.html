@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CryptoShare - Encrypted File Sharing</title>
+</head>
+<body>
+  <h2>Upload & Share Encrypted File</h2>
+  <input type="file" id="fileInput" />
+  <select id="algoSelect">
+    <option value="aes">AES</option>
+    <option value="xor">XOR</option>
+  </select>
+  <button onclick="encryptAndUpload()">Encrypt & Upload</button>
+  <p id="status"></p>
+  <script src="js/aes.js"></script>
+  <script src="js/xor.js"></script>
+  <script src="js/share.js"></script>
+</body>
+</html>
+

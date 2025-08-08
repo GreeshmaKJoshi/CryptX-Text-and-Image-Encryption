@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CryptX - Image Encryption Algorithms</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://t4.ftcdn.net/jpg/01/78/26/33/360_F_178263302_k1BXHnatPVB8ucmYmZKY53Sd89ziqpMQ.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-bottom: 40px;
+      font-size: 40px;
+      color: #00eaff;
+      text-align: center;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 40px;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .card {
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 30px 25px;
+      border-radius: 16px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+      width: 280px;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+    }
+
+    .card h2 {
+      margin-bottom: 15px;
+      color: #00ffff;
+      font-size: 22px;
+    }
+
+    .card p {
+      font-size: 15px;
+      color: #e0e0e0;
+      line-height: 1.5;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .back {
+      margin-top: 40px;
+      font-size: 17px;
+      color: #00eaff;
+      text-decoration: underline;
+    }
+
+    .back:hover {
+      color: #00ffff;
+    }
+
+    @media screen and (max-width: 900px) {
+      .card {
+        width: 100%;
+        max-width: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Choose Image Encryption Algorithm</h1>
+
+  <!-- Top Row (3 cards) -->
+  <div class="row">
+    <a href="image_aes.html">
+      <div class="card">
+        <h2>AES Encryption</h2>
+        <p>Encrypt image data using AES on base64 format (symmetric key).</p>
+      </div>
+    </a>
+    <a href="image_xor.html">
+      <div class="card">
+        <h2>XOR Pixel Cipher</h2>
+        <p>Encrypt each pixel’s RGB values using a key and XOR operation.</p>
+      </div>
+    </a>
+    <a href="image_shuffle.html">
+      <div class="card">
+        <h2>Grayscale Shuffle</h2>
+        <p>Encrypt image by scrambling grayscale pixels with a seed key.</p>
+      </div>
+    </a>
+  </div>
+
+  <!-- Bottom Row (2 centered cards) -->
+  <div class="row">
+    <a href="image_rgb_split.html">
+      <div class="card">
+        <h2>RGB Channel Lock</h2>
+        <p>Split channels, encrypt each RGB part separately with keys.</p>
+      </div>
+    </a>
+    <a href="image_chaotic.html">
+      <div class="card">
+        <h2>Chaotic Logistic Map</h2>
+        <p>Simulate chaotic sequence-based pixel position encryption.</p>
+      </div>
+    </a>
+  </div>
+
+  <a class="back" href="index.html">← Back to Home</a>
+
+</body>
+</html>

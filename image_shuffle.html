@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Grayscale Shuffle</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url("https://images.unsplash.com/photo-1667227283849-24396056348f?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D") no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      text-align: center;
+      color: #fff;
+      padding: 20px 0;
+      text-shadow: 2px 2px 4px #000;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+    }
+    .panel {
+      background: rgba(255,255,255,0.9);
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    canvas {
+      max-width: 200px;
+      border: 1px solid #999;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      background-color: grey;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .center-buttons {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .theory-box {
+  display: none;
+  opacity: 0;
+  transition: opacity 1s ease;
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 15px;
+  border-radius: 10px;
+  max-width: 600px;
+  margin: 20px auto;
+  color: #333;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.theory-box.show {
+  display: block;
+  opacity: 1;
+}
+
+  </style>
+</head>
+<body>
+<h1>Grayscale Shuffle</h1>
+<div class="container">
+  <div class="panel">
+    <input type="file" id="imageInput"><br><br>
+    <input type="number" id="shuffleKey" placeholder="123" value="123"><br><br>
+    <button onclick="encryptGrayscale()">Encrypt (Shuffle)</button>
+    <button onclick="decryptGrayscale()">Decrypt (Unshuffle)</button><br><br>
+    <canvas id="originalCanvas"></canvas>
+    <p>Original</p>
+  </div>
+  <div class="panel">
+    <canvas id="encryptedCanvas"></canvas>
+    <p>Encrypted (Shuffled)</p>
+  </div>
+  <div class="panel">
+    <canvas id="decryptedCanvas"></canvas>
+    <p>Decrypted (Restored)</p>
+  </div>
+</div>
+<div class="center-buttons">
+  <button onclick="showTheory()">Show Theory</button>
+  <button onclick="showAnimation()">Show Animation</button>
+</div>
+<div class="center-buttons">
+  <canvas id="animationCanvas"></canvas>
+</div>
+<div id="infoSection" class="theory-box"> </div>
+
+<div id="infoSection" style="display: none; background-color: rgba(255,255,255,0.85); padding: 15px; border-radius: 10px; max-width: 600px; margin: 20px auto;"></div>
+
+<script>
+let grayscalePixels = [], width, height, originalPixels = [], colorData = [];
+
+function encryptGrayscale() {
+  const file = document.getElementById('imageInput').files[0];
+  const key = parseInt(document.getElementById('shuffleKey').value);
+  if (!file) return alert("Upload an image");
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.getElementById('originalCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+
+      width = img.width;
+      height = img.height;
+
+      let imageData = ctx.getImageData(0, 0, width, height);
+      let data = imageData.data;
+      colorData = [...data];
+
+      grayscalePixels = [];
+      for (let i = 0; i < data.length; i += 4) {
+        let gray = Math.floor((data[i] + data[i + 1] + data[i + 2]) / 3);
+        grayscalePixels.push(gray);
+      }
+      originalPixels = [...grayscalePixels];
+
+      let shuffled = [...grayscalePixels];
+      const rng = seededRandom(key);
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+
+      drawGrayscaleImage('encryptedCanvas', shuffled);
+      grayscalePixels = shuffled;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function decryptGrayscale() {
+  const key = parseInt(document.getElementById('shuffleKey').value);
+  if (grayscalePixels.length === 0) return alert("Please encrypt first.");
+
+  const indexes = Array.from({ length: grayscalePixels.length }, (_, i) => i);
+  const rng = seededRandom(key);
+
+  for (let i = indexes.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [indexes[i], indexes[j]] = [indexes[j], indexes[i]];
+  }
+
+  const decrypted = new Array(grayscalePixels.length);
+  for (let i = 0; i < grayscalePixels.length; i++) {
+    decrypted[indexes[i]] = grayscalePixels[i];
+  }
+
+  drawGrayscaleImage('decryptedCanvas', decrypted);
+}
+
+function drawGrayscaleImage(canvasId, grayData) {
+  const canvas = document.getElementById(canvasId);
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  let imgData = ctx.createImageData(width, height);
+  for (let i = 0; i < grayData.length; i++) {
+    imgData.data[i * 4 + 0] = grayData[i];
+    imgData.data[i * 4 + 1] = grayData[i];
+    imgData.data[i * 4 + 2] = grayData[i];
+    imgData.data[i * 4 + 3] = 255;
+  }
+  ctx.putImageData(imgData, 0, 0);
+}
+
+function seededRandom(seed) {
+  let x = Math.sin(seed) * 10000;
+  return function () {
+    x = Math.sin(x) * 10000;
+    return x - Math.floor(x);
+  };
+}
+
+function showTheory() {
+  const info = document.getElementById("infoSection");
+  info.innerHTML = `
+    <h3>Grayscale Shuffle Cipher - Theory</h3>
+    <ul>
+      <li><strong>Step 1:</strong> Convert image to grayscale by averaging RGB values.</li>
+      <li><strong>Step 2:</strong> Store grayscale pixel values into an array.</li>
+      <li><strong>Step 3:</strong> Shuffle array using a seeded key.</li>
+      <li><strong>Step 4:</strong> Reconstruct image with shuffled pixels.</li>
+      <li><strong>Step 5:</strong> Use the same key to reverse the shuffle for decryption.</li>
+    </ul>
+  `;
+  info.classList.add('show');
+}
+
+
+
+function showAnimation() {
+  if (!grayscalePixels.length || !originalPixels.length || !colorData.length) {
+    alert("Please upload and encrypt an image first.");
+    return;
+  }
+  const canvas = document.getElementById("animationCanvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+
+  let step = 0;
+  const colorFrame = new Uint8ClampedArray(colorData);
+  const imageData = ctx.createImageData(width, height);
+
+  // Phase 1: Fade color image to grayscale
+  const fadeToGray = setInterval(() => {
+    if (step >= width * height) {
+      clearInterval(fadeToGray);
+      shuffleAndShow();
+      return;
+    }
+    for (let i = step; i < step + 1000 && i < width * height; i++) {
+      let gray = Math.floor((colorData[i * 4] + colorData[i * 4 + 1] + colorData[i * 4 + 2]) / 3);
+      colorFrame[i * 4] = gray;
+      colorFrame[i * 4 + 1] = gray;
+      colorFrame[i * 4 + 2] = gray;
+      colorFrame[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(new ImageData(colorFrame, width, height), 0, 0);
+    step += 1000;
+  }, 30);
+
+  function shuffleAndShow() {
+    setTimeout(() => {
+      const encryptedImage = ctx.createImageData(width, height);
+      for (let i = 0; i < grayscalePixels.length; i++) {
+        encryptedImage.data[i * 4] = grayscalePixels[i];
+        encryptedImage.data[i * 4 + 1] = grayscalePixels[i];
+        encryptedImage.data[i * 4 + 2] = grayscalePixels[i];
+        encryptedImage.data[i * 4 + 3] = 255;
+      }
+      ctx.putImageData(encryptedImage, 0, 0);
+      setTimeout(() => decryptAndShow(), 1500);
+    }, 1000);
+  }
+
+  function decryptAndShow() {
+    const key = parseInt(document.getElementById('shuffleKey').value);
+    const indexes = Array.from({ length: grayscalePixels.length }, (_, i) => i);
+    const rng = seededRandom(key);
+    for (let i = indexes.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [indexes[i], indexes[j]] = [indexes[j], indexes[i]];
+    }
+    const decrypted = new Array(grayscalePixels.length);
+    for (let i = 0; i < grayscalePixels.length; i++) {
+      decrypted[indexes[i]] = grayscalePixels[i];
+    }
+
+    const decryptedImage = ctx.createImageData(width, height);
+    for (let i = 0; i < decrypted.length; i++) {
+      decryptedImage.data[i * 4] = decrypted[i];
+      decryptedImage.data[i * 4 + 1] = decrypted[i];
+      decryptedImage.data[i * 4 + 2] = decrypted[i];
+      decryptedImage.data[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(decryptedImage, 0, 0);
+  }
+}
+</script>
+</body>
+</html>

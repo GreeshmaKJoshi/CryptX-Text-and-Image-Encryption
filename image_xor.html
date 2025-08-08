@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XOR Pixel Cipher - Image Encryption & Decryption</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: url('https://images.unsplash.com/photo-1458682625221-3a45f8a844c7?w=600&auto=format&fit=crop&q=60') no-repeat center center fixed;
+      background-size: cover;
+      color: #000;
+    }
+    h1 {
+      text-align: center;
+      margin: 30px 0;
+      color: black;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+      padding: 20px;
+    }
+    .panel {
+      background-color: rgba(255, 255, 255, 0.85);
+      padding: 20px;
+      border-radius: 12px;
+      width: 300px;
+      text-align: center;
+    }
+    canvas {
+      width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 16px;
+      font-weight: bold;
+      background: #444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #222;
+    }
+    input, textarea {
+      width: 100%;
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    #infoSection {
+      max-width: 800px;
+      margin: 20px auto;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 12px;
+      display: none;
+      animation: fadeIn 1s ease-in-out;
+    }
+    .info-buttons {
+      text-align: center;
+      margin-top: 40px;
+    }
+    #animationCanvas {
+      display: block;
+      margin: 20px auto;
+      border: 2px solid #000;
+      border-radius: 8px;
+      max-width: 500px;
+      background: white;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <h1>XOR Pixel Cipher - Image Encryption & Decryption</h1>
+
+  <div class="container">
+    <div class="panel">
+      <input type="file" id="imageInput" accept="image/*" />
+      <input type="number" id="xorKey" placeholder="Enter XOR Key" value="123" />
+      <button onclick="encryptImage()">Encrypt</button>
+      <button onclick="decryptImage()">Decrypt</button>
+      <textarea id="encryptedOutput" rows="4" readonly placeholder="Encrypted Base64"></textarea>
+      <p><strong>Original</strong></p>
+      <canvas id="originalCanvas"></canvas>
+    </div>
+
+    <div class="panel">
+      <p><strong>Encrypted (Shuffled)</strong></p>
+      <canvas id="encryptedCanvas"></canvas>
+    </div>
+
+    <div class="panel">
+      <p><strong>Decrypted (Restored)</strong></p>
+      <canvas id="decryptedCanvas"></canvas>
+    </div>
+  </div>
+
+  <div class="info-buttons">
+    <button onclick="showTheory()">Show Theory</button>
+    <button onclick="startAnimation()">Show Animation</button>
+  </div>
+
+  <canvas id="animationCanvas"></canvas>
+
+  <div id="infoSection"></div>
+
+  <script>
+    let originalImageData;
+    let width, height;
+
+    function encryptImage() {
+      const fileInput = document.getElementById("imageInput");
+      const xorKey = parseInt(document.getElementById("xorKey").value);
+      if (!fileInput.files[0]) return alert("Please upload an image.");
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.getElementById("originalCanvas");
+          const ctx = canvas.getContext("2d");
+          canvas.width = width = img.width;
+          canvas.height = height = img.height;
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, width, height);
+          originalImageData = new Uint8ClampedArray(imageData.data);
+
+          const encryptedData = new Uint8ClampedArray(imageData.data.length);
+          for (let i = 0; i < imageData.data.length; i++) {
+            encryptedData[i] = imageData.data[i] ^ xorKey;
+          }
+
+          const encryptedCanvas = document.getElementById("encryptedCanvas");
+          const encryptedCtx = encryptedCanvas.getContext("2d");
+          encryptedCanvas.width = width;
+          encryptedCanvas.height = height;
+
+          const newImageData = new ImageData(encryptedData, width, height);
+          encryptedCtx.putImageData(newImageData, 0, 0);
+
+          document.getElementById("encryptedOutput").value = encryptedCanvas.toDataURL();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(fileInput.files[0]);
+    }
+
+    function decryptImage() {
+      const xorKey = parseInt(document.getElementById("xorKey").value);
+      const encryptedCanvas = document.getElementById("encryptedCanvas");
+      const ctx = encryptedCanvas.getContext("2d");
+      const imageData = ctx.getImageData(0, 0, width, height);
+
+      const decryptedData = new Uint8ClampedArray(imageData.data.length);
+      for (let i = 0; i < imageData.data.length; i++) {
+        decryptedData[i] = imageData.data[i] ^ xorKey;
+      }
+
+      const decryptedCanvas = document.getElementById("decryptedCanvas");
+      const decryptedCtx = decryptedCanvas.getContext("2d");
+      decryptedCanvas.width = width;
+      decryptedCanvas.height = height;
+
+      const newImageData = new ImageData(decryptedData, width, height);
+      decryptedCtx.putImageData(newImageData, 0, 0);
+    }
+
+    function showTheory() {
+      const info = document.getElementById("infoSection");
+      info.innerHTML = `
+        <h3>XOR Pixel Cipher - Theory</h3>
+        <ul>
+          <li><strong>Step 1:</strong> Each pixel’s RGB value is XORed with a secret key.</li>
+          <li><strong>Step 2:</strong> Encrypted image is stored/displayed as output.</li>
+          <li><strong>Step 3:</strong> Decryption is done by applying XOR again with same key.</li>
+          <li><strong>Note:</strong> XOR is reversible and symmetric, making it ideal for simple encryption.</li>
+        </ul>
+      `;
+      info.style.display = "block";
+    }
+
+    
+    function startAnimation() {
+  const originalCtx = document.getElementById("originalCanvas").getContext("2d");
+  const xorKey = parseInt(document.getElementById("xorKey").value);
+  if (!originalImageData) return alert("Upload and encrypt an image first.");
+
+  const canvas = document.getElementById("animationCanvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+
+  let step = 0;
+  const totalSteps = 30;
+
+  // PHASE 1: Animate Original → Encrypted
+  const animateToEncrypted = setInterval(() => {
+    if (step > totalSteps) {
+      clearInterval(animateToEncrypted);
+      setTimeout(() => animateToDecrypted(), 1000); // Wait then start next phase
+      return;
+    }
+
+    const mixedData = new Uint8ClampedArray(originalImageData.length);
+    for (let i = 0; i < originalImageData.length; i++) {
+      const original = originalImageData[i];
+      const encrypted = original ^ xorKey;
+      mixedData[i] = original + ((encrypted - original) * (step / totalSteps));
+    }
+
+    const tempImageData = new ImageData(mixedData, width, height);
+    ctx.putImageData(tempImageData, 0, 0);
+
+    step++;
+  }, 50);
+
+  // PHASE 2: Animate Encrypted → Decrypted
+  function animateToDecrypted() {
+    let step2 = 0;
+
+    const encryptedData = new Uint8ClampedArray(originalImageData.length);
+    for (let i = 0; i < originalImageData.length; i++) {
+      encryptedData[i] = originalImageData[i] ^ xorKey;
+    }
+
+    const decryptInterval = setInterval(() => {
+      if (step2 > totalSteps) {
+        clearInterval(decryptInterval);
+        return;
+      }
+
+      const mixedBack = new Uint8ClampedArray(originalImageData.length);
+      for (let i = 0; i < originalImageData.length; i++) {
+        const encrypted = encryptedData[i];
+        const decrypted = encrypted ^ xorKey;
+        mixedBack[i] = encrypted + ((decrypted - encrypted) * (step2 / totalSteps));
+      }
+
+      const tempImageData = new ImageData(mixedBack, width, height);
+      ctx.putImageData(tempImageData, 0, 0);
+
+      step2++;
+    }, 50);
+  }
+}
+
+  </script>
+</body>
+</html>

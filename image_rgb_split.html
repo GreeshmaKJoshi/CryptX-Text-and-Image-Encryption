@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RGB Channel Lock</title>
+  <style>
+    html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: url('https://wallpapers.com/images/hd/rgb-background-r4m9h3yi91adpuso.jpg') center center no-repeat fixed;
+  background-size: contain;  /* 💡 This ensures the full image fits, no cropping */
+  background-color: black;   /* Fill leftover space with black */
+  font-family: 'Segoe UI', sans-serif;
+  color: white;
+}
+
+    h1 {
+      text-align: center;
+      padding: 20px;
+      color:white;
+      text-shadow: 1px 1px 3px black;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+    }
+    .panel {
+      background: rgba(253, 252, 252, 0.9);
+      color: black;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 250px;
+    }
+    canvas {
+      width: 100%;
+      border: 1px solid #999;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      background-color: rgb(55, 51, 51); /* Darker button to contrast bright background */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #222;
+    }
+    #infoSection {
+      display: none;
+      opacity: 0;
+      transition: opacity 1s ease;
+      background-color: black(255, 255, 255, 0.85);
+      padding: 15px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin: 20px auto;
+      color: #fefcfc;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border: 1px solid white;
+      border-radius: 14px;
+    }
+    #infoSection.show {
+      display: block;
+      opacity: 1;
+    }
+    #animationCanvas {
+      display: block;
+      margin: 20px auto;
+      border: 2px solid #666;
+      max-width: 300px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+<h1>RGB Channel Lock Encryption</h1>
+<div class="container">
+  <div class="panel">
+    <input type="file" id="imageInput"><br><br>
+    <input type="number" id="key" placeholder="Enter key (e.g. 50)"><br><br>
+    <button onclick="encryptRGB()">Encrypt</button>
+    <button onclick="decryptRGB()">Decrypt</button><br><br>
+    <canvas id="originalCanvas"></canvas>
+    <p>Original</p>
+  </div>
+  <div class="panel">
+    <canvas id="encryptedCanvas"></canvas>
+    <p>Encrypted</p>
+  </div>
+  <div class="panel">
+    <canvas id="decryptedCanvas"></canvas>
+    <p>Decrypted</p>
+  </div>
+</div>
+<div style="text-align:center">
+  <button onclick="showTheory()">Show Theory</button>
+  <button onclick="showAnimation()">Show Animation</button>
+</div>
+<div id="infoSection"></div>
+<canvas id="animationCanvas"></canvas>
+<script>
+let originalImageData, width, height;
+
+function encryptRGB() {
+  const file = document.getElementById('imageInput').files[0];
+  const key = parseInt(document.getElementById('key').value);
+  if (!file || isNaN(key)) return alert("Upload image and enter a numeric key.");
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.getElementById('originalCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      width = img.width;
+      height = img.height;
+      originalImageData = ctx.getImageData(0, 0, width, height);
+
+      const encryptedData = new Uint8ClampedArray(originalImageData.data);
+      for (let i = 0; i < encryptedData.length; i += 4) {
+        encryptedData[i] ^= key;     // Red
+        encryptedData[i+1] ^= key;   // Green
+        encryptedData[i+2] ^= key;   // Blue
+      }
+      const encCanvas = document.getElementById('encryptedCanvas');
+      encCanvas.width = width;
+      encCanvas.height = height;
+      encCanvas.getContext('2d').putImageData(new ImageData(encryptedData, width, height), 0, 0);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function decryptRGB() {
+  const key = parseInt(document.getElementById('key').value);
+  if (!originalImageData || isNaN(key)) return alert("Encrypt the image first and enter the key.");
+
+  const encryptedCanvas = document.getElementById('encryptedCanvas');
+  const ctx = encryptedCanvas.getContext('2d');
+  const encryptedData = ctx.getImageData(0, 0, width, height).data;
+  const decryptedData = new Uint8ClampedArray(encryptedData);
+
+  for (let i = 0; i < decryptedData.length; i += 4) {
+    decryptedData[i] ^= key;
+    decryptedData[i+1] ^= key;
+    decryptedData[i+2] ^= key;
+  }
+  const decCanvas = document.getElementById('decryptedCanvas');
+  decCanvas.width = width;
+  decCanvas.height = height;
+  decCanvas.getContext('2d').putImageData(new ImageData(decryptedData, width, height), 0, 0);
+}
+
+function showTheory() {
+  const info = document.getElementById("infoSection");
+  info.innerHTML = `
+    <h3>RGB Channel Lock - Theory</h3>
+    <ul>
+      <li><strong>Step 1:</strong> Load an image and extract pixel data (R, G, B channels).</li>
+      <li><strong>Step 2:</strong> XOR each RGB value with a user-provided key (same for all channels).</li>
+      <li><strong>Step 3:</strong> The result appears visually scrambled (encrypted).</li>
+      <li><strong>Step 4:</strong> Apply the same key again to reverse (decrypt) the image.</li>
+      <li><strong>Note:</strong> XOR is symmetric: (A ⊕ B) ⊕ B = A</li>
+    </ul>
+  `;
+  info.classList.add("show");
+}
+
+function showAnimation() {
+  const key = parseInt(document.getElementById('key').value);
+  const canvas = document.getElementById("originalCanvas");
+  if (!canvas || isNaN(key)) return alert("Please upload and encrypt an image first.");
+
+  const ctx = canvas.getContext('2d');
+  const original = ctx.getImageData(0, 0, width, height);
+  const animationCanvas = document.getElementById("animationCanvas");
+  animationCanvas.width = width;
+  animationCanvas.height = height;
+  const animCtx = animationCanvas.getContext("2d");
+
+  const encrypted = new Uint8ClampedArray(original.data);
+  for (let i = 0; i < encrypted.length; i += 4) {
+    encrypted[i] ^= key;
+    encrypted[i + 1] ^= key;
+    encrypted[i + 2] ^= key;
+  }
+
+  const decrypted = new Uint8ClampedArray(encrypted);
+  for (let i = 0; i < decrypted.length; i += 4) {
+    decrypted[i] ^= key;
+    decrypted[i + 1] ^= key;
+    decrypted[i + 2] ^= key;
+  }
+
+  let step = 0;
+  const steps = [original.data, encrypted, decrypted];
+  function animateStep() {
+    if (step >= steps.length) return;
+    animCtx.putImageData(new ImageData(steps[step], width, height), 0, 0);
+    step++;
+    setTimeout(animateStep, 1500);
+  }
+  animateStep();
+}
+</script>
+</body>
+</html>

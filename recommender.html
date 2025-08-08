@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CryptX Assistant</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #232526, #414345);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .chatbox {
+      max-width: 700px;
+      margin: 20px auto;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: left;
+      min-height: 160px;
+    }
+
+    .message {
+      margin: 15px 0;
+      padding: 12px 16px;
+      border-radius: 10px;
+      max-width: 90%;
+      line-height: 1.5;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    .user {
+      background: #00cec9;
+      color: black;
+      text-align: right;
+      margin-left: auto;
+    }
+
+    .bot {
+      background: #ffffff20;
+      color: white;
+      text-align: left;
+      margin-right: auto;
+    }
+
+    input[type="text"] {
+      width: 65%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      margin-top: 20px;
+      outline: none;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 6px;
+      background-color: #00ccff;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0099cc;
+    }
+
+    .suggestions {
+      margin-top: 25px;
+    }
+
+    .suggestions button {
+      margin: 6px;
+      background-color: #2d98da;
+      font-size: 14px;
+    }
+
+    a {
+      color: #00f7ff;
+      text-decoration: underline;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🤖 CryptX Assistant</h1>
+  <p>Ask me what you want to encrypt and I’ll guide you to the best method!</p>
+
+  <div class="chatbox" id="chatbox">
+    <div class="message bot">Hi! Tell me what kind of data you want to encrypt — text, image, secure message, etc.</div>
+  </div>
+
+  <div>
+    <input type="text" id="userInput" placeholder="Enter your prompt here...">
+    <button onclick="sendPrompt()">Send</button>
+  </div>
+
+  <div class="suggestions">
+    <p>💡 Try these:</p>
+    <button onclick="useSuggestion('I want to encrypt a short message.')">Short message</button>
+    <button onclick="useSuggestion('Encrypt a confidential file.')">Confidential file</button>
+    <button onclick="useSuggestion('I want to encrypt an image.')">Encrypt image</button>
+    <button onclick="useSuggestion('Encrypt with public key.')">Public key</button>
+    <button onclick="useSuggestion('Encrypt in a chaotic way.')">Chaotic</button>
+  </div>
+
+  <script>
+    function useSuggestion(text) {
+      document.getElementById("userInput").value = text;
+      sendPrompt();
+    }
+
+    function sendPrompt() {
+      const input = document.getElementById("userInput").value.trim();
+      if (!input) return;
+
+      document.getElementById("chatbox").innerHTML = ""; // Clear history
+      appendMessage(input, 'user');
+      document.getElementById("userInput").value = "";
+      setTimeout(() => processPrompt(input.toLowerCase()), 800);
+    }
+
+    function appendMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.className = `message ${sender}`;
+      msg.innerHTML = text;
+      document.getElementById("chatbox").appendChild(msg);
+      document.getElementById("chatbox").scrollTop = document.getElementById("chatbox").scrollHeight;
+    }
+
+    function processPrompt(prompt) {
+      let response = "";
+
+      if (
+        prompt.includes("simple") || prompt.includes("basic") ||
+        prompt.includes("short message") || prompt.includes("easy") || prompt.includes("beginner")
+      ) {
+        response = `🔐 <strong>Recommended:</strong> Caesar Cipher<br>Perfect for basic obfuscation.<br><a href="caesar.html">Try Caesar Cipher</a>`;
+      } else if (
+        prompt.includes("secure") || prompt.includes("confidential") ||
+        prompt.includes("password") || prompt.includes("sensitive") || prompt.includes("file")
+      ) {
+        response = `🔐 <strong>Recommended:</strong> AES Encryption<br>Strong for secure documents and texts.<br><a href="aes.html">Try AES</a>`;
+      } else if (
+        prompt.includes("public key") || prompt.includes("rsa") ||
+        prompt.includes("authentication") || prompt.includes("signing") || prompt.includes("communication")
+      ) {
+        response = `🔐 <strong>Recommended:</strong> RSA Encryption<br>Public-private key encryption.<br><a href="rsa.html">Try RSA</a>`;
+      } else if (
+        prompt.includes("image") || prompt.includes("photo") || prompt.includes("jpeg") || prompt.includes("picture")
+      ) {
+        response = `🖼️ <strong>Recommended:</strong> AES Image or XOR Cipher<br><a href="image_algorithms.html">Explore Image Encryption</a>`;
+      } else if (
+        prompt.includes("chaotic") || prompt.includes("shuffle") || prompt.includes("random") || prompt.includes("pattern")
+      ) {
+        response = `🧪 <strong>Recommended:</strong> Chaotic Logistic Map<br>Ideal for unpredictable image encryption.<br><a href="chaotic.html">Try Chaotic Map</a>`;
+      } else {
+        response = `🤖 I'm not sure yet! Try describing if it's a text, image, or secure communication.`;
+      }
+
+      appendMessage(response, 'bot');
+    }
+  </script>
+
+</body>
+</html>
