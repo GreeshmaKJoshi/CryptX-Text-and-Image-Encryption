@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decrypt Data | CryptoShare</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #00AEEF;
+            background-position: center;
+        }
+        .container {
+            background-color: #00AEEF;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        textarea, input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background-color: blue;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        #decryptedImage {
+            max-width: 100%;
+            margin-top: 20px;
+            display: none;
+            border: 1px solid #ddd;
+        }
+        #decryptedText {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            word-break: break-all;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔓 Decrypt Shared Data</h1>
+    
+    <div class="container">
+        <div>
+            <label for="encryptedData">Paste Encrypted Data:</label>
+            <textarea id="encryptedData" rows="5" placeholder="Paste the full encrypted data here"></textarea>
+        </div>
+        
+        <div>
+            <label for="secretKey">Enter Secret Key:</label>
+            <input type="text" id="secretKey" placeholder="Paste the secret key here">
+        </div>
+        
+        <button onclick="decryptData()">Decrypt Data</button>
+        
+        <div id="resultContainer">
+            <h3>Decrypted Result:</h3>
+            <div id="decryptedText" class="hidden"></div>
+            <img id="decryptedImage" class="hidden" alt="Decrypted image">
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        function decryptData() {
+    const encryptedData = document.getElementById("encryptedData").value;
+    const secretKey = document.getElementById("secretKey").value;
+    
+    try {
+        const decrypted = CryptoJS.AES.decrypt(encryptedData, secretKey);
+        const decryptedData = decrypted.toString(CryptoJS.enc.Utf8);
+        
+        // Check if it's an image data URL
+        if (decryptedData.startsWith('data:image/')) {
+            document.getElementById('decryptedImage').src = decryptedData;
+            document.getElementById('decryptedImage').style.display = 'block';
+            document.getElementById('decryptedText').textContent = 'Image decrypted successfully!';
+        } else {
+            document.getElementById('decryptedText').textContent = decryptedData;
+        }
+    } catch (error) {
+        alert("Decryption failed: " + error.message);
+    }
+}
+        function isImageData(data) {
+            if (!data) return false;
+            // Check for common image signatures
+            return data.startsWith('/9j') ||  // JPEG
+                   data.startsWith('iVBOR') || // PNG
+                   data.startsWith('R0lGOD') || // GIF
+                   data.startsWith('UklGR') ||  // WEBP
+                   data.startsWith('SUkq');    // TIFF
+        }
+    </script>
+</body>
+</html>
